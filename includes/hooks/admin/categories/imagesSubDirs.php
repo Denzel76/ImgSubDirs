@@ -21,10 +21,9 @@ class hook_admin_categories_imagesSubDirs {
     
     $this->load_lang();
 
-    $images_dir = "images/"; // default catalog images folder;
     $root_images_dir = DIR_FS_CATALOG_IMAGES;
       
-    $action = (isset($_GET['action']) ? $_GET['action'] : '');
+    $action = $_GET['action'] ?? '';
     
     if ($action=="insert_product" || $action=="update_product") {
 
@@ -33,22 +32,22 @@ class hook_admin_categories_imagesSubDirs {
 
         $products_date_available = (date('Y-m-d') < $products_date_available) ? $products_date_available : 'null';
 
-        $sql_data_array = array('products_quantity' => (int)tep_db_prepare_input($_POST['products_quantity']),
-                                'products_model' => tep_db_prepare_input($_POST['products_model']),
-                                'products_price' => tep_db_prepare_input($_POST['products_price']),
-                                'products_date_available' => $products_date_available,
-                                'products_weight' => (float)tep_db_prepare_input($_POST['products_weight']),
-                                'products_status' => tep_db_prepare_input($_POST['products_status']),
-                                'products_tax_class_id' => tep_db_prepare_input($_POST['products_tax_class_id']),
-                                'manufacturers_id' => (int)tep_db_prepare_input($_POST['manufacturers_id']));
-        $sql_data_array['products_gtin'] = (tep_not_null($_POST['products_gtin'])) ? str_pad(tep_db_prepare_input($_POST['products_gtin']), 14, '0', STR_PAD_LEFT) : 'null';
+        $sql_data_array = ['products_quantity' => (int)tep_db_prepare_input($_POST['products_quantity']),
+                           'products_model' => tep_db_prepare_input($_POST['products_model']),
+                           'products_price' => tep_db_prepare_input($_POST['products_price']),
+                           'products_date_available' => $products_date_available,
+                           'products_weight' => (float)tep_db_prepare_input($_POST['products_weight']),
+                           'products_status' => tep_db_prepare_input($_POST['products_status']),
+                           'products_tax_class_id' => tep_db_prepare_input($_POST['products_tax_class_id']),
+                           'manufacturers_id' => (int)tep_db_prepare_input($_POST['manufacturers_id']),
+                           'products_gtin' => (tep_not_null($_POST['products_gtin'])) ? str_pad(tep_db_prepare_input($_POST['products_gtin']), 14, '0', STR_PAD_LEFT) : 'null'];
         
-          $new_dir = preg_replace('/[^a-zA-Z0-9_.-]/i', '_',$_POST['new_directory']);
-          $dir = (tep_not_null($new_dir) ? $_POST['directory'].'/'.$new_dir : $_POST['directory']);
-          $dir = ($dir ? $dir .'/' : '');
+        $new_dir = preg_replace('/[^a-zA-Z0-9_.-]/i', '_',$_POST['new_directory']);
+        $dir = (tep_not_null($new_dir) ? $_POST['directory'].'/'.$new_dir : $_POST['directory']);
+        $dir = ($dir ? $dir .'/' : '');
 
         if ($dir && !is_dir($root_images_dir . $dir)) {
-          if (mkdir($root_images_dir . $dir)) $messageStack->add_session(sprintf(SUCCESS_CREATED_DIRECTORY, $new_dir, $images_dir.$_POST['directory']), 'success');
+          if (mkdir($root_images_dir . $dir)) $messageStack->add_session(sprintf(SUCCESS_CREATED_DIRECTORY, $new_dir, "images/".$_POST['directory']), 'success');
         }
 
         $mimetype = array('image/jpeg', 'image/gif', 'image/png');
@@ -66,7 +65,7 @@ class hook_admin_categories_imagesSubDirs {
         }
 
         if ($action == 'insert_product') {
-          $insert_sql_data = array('products_date_added' => 'now()');
+          $insert_sql_data = ['products_date_added' => 'now()'];
 
           $sql_data_array = array_merge($sql_data_array, $insert_sql_data);
 
@@ -75,7 +74,7 @@ class hook_admin_categories_imagesSubDirs {
 
           tep_db_query("insert into products_to_categories (products_id, categories_id) values ('" . (int)$products_id . "', '" . (int)$current_category_id . "')");
         } elseif ($action == 'update_product') {
-          $update_sql_data = array('products_last_modified' => 'now()');
+          $update_sql_data = ['products_last_modified' => 'now()'];
 
           $sql_data_array = array_merge($sql_data_array, $update_sql_data);
 
@@ -86,16 +85,15 @@ class hook_admin_categories_imagesSubDirs {
         for ($i=0, $n=sizeof($languages); $i<$n; $i++) {
           $language_id = $languages[$i]['id'];
 
-          $sql_data_array = array('products_name' => tep_db_prepare_input($_POST['products_name'][$language_id]),
-                                  'products_description' => tep_db_prepare_input($_POST['products_description'][$language_id]),
-                                  'products_url' => tep_db_prepare_input($_POST['products_url'][$language_id]));
-          $sql_data_array['products_seo_description'] = tep_db_prepare_input($_POST['products_seo_description'][$language_id]);
-          $sql_data_array['products_seo_keywords'] = tep_db_prepare_input($_POST['products_seo_keywords'][$language_id]);
-          $sql_data_array['products_seo_title'] = tep_db_prepare_input($_POST['products_seo_title'][$language_id]);
+          $sql_data_array = ['products_name' => tep_db_prepare_input($_POST['products_name'][$language_id]),
+                             'products_description' => tep_db_prepare_input($_POST['products_description'][$language_id]),
+                             'products_url' => tep_db_prepare_input($_POST['products_url'][$language_id]),
+                             'products_seo_description' => tep_db_prepare_input($_POST['products_seo_description'][$language_id]),
+                             'products_seo_keywords' => tep_db_prepare_input($_POST['products_seo_keywords'][$language_id]),
+                             'products_seo_title' => tep_db_prepare_input($_POST['products_seo_title'][$language_id])];
 
           if ($action == 'insert_product') {
-            $insert_sql_data = array('products_id' => $products_id,
-                                     'language_id' => $language_id);
+            $insert_sql_data = ['products_id' => $products_id, 'language_id' => $language_id];
 
             $sql_data_array = array_merge($sql_data_array, $insert_sql_data);
 
@@ -106,15 +104,14 @@ class hook_admin_categories_imagesSubDirs {
         }
 
         $pi_sort_order = 0;
-        $piArray = array(0);
+        $piArray = [0];
         
         foreach ($_FILES as $key => $value) {
 // Update existing large product images
           if (preg_match('/^products_image_large_([0-9]+)$/', $key, $matches)) {
                 $pi_sort_order++;
 
-                $sql_data_array = array('htmlcontent' => tep_db_prepare_input($_POST['products_image_htmlcontent_' . $matches[1]]),
-                                        'sort_order' => $pi_sort_order);
+            $sql_data_array = ['htmlcontent' => tep_db_prepare_input($_POST['products_image_htmlcontent_' . $matches[1]]), 'sort_order' => $pi_sort_order];
 
             if ($_FILES['products_image_large_'.$matches[1]]['error'] != 4) {
               $t="";
@@ -133,8 +130,7 @@ class hook_admin_categories_imagesSubDirs {
             $piArray[] = (int)$matches[1];
           } elseif (preg_match('/^products_image_large_new_([0-9]+)$/', $key, $matches)) {
 // Insert new large product images
-                $sql_data_array = array('products_id' => (int)$products_id,
-                                        'htmlcontent' => tep_db_prepare_input($_POST['products_image_htmlcontent_new_' . $matches[1]]));
+                $sql_data_array = ['products_id' => (int)$products_id, 'htmlcontent' => tep_db_prepare_input($_POST['products_image_htmlcontent_new_' . $matches[1]])];
 
             if ($_FILES['products_image_large_new_'.$matches[1]]['error'] != 4) {
               $t="";
@@ -206,7 +202,7 @@ class hook_admin_categories_imagesSubDirs {
         $OSCOM_Hooks->call('categories', 'productActionSave');
 
         tep_redirect(tep_href_link('categories.php', 'cPath=' . $cPath . '&pID=' . $products_id));
-    }
+		}
   }
 
   function listen_productTab() {
